@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Przycisk Chaosu 2.0</title>
+
+<style>
+body {
+  margin: 0;
+  background-color: #0b1a3a;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: white;
+  user-select: none;
+}
+
+#points {
+  font-size: 5vw;
+  margin-top: 15px;
+}
+
+#chaosBtn {
+  margin-top: 8vh;
+  font-size: 15vw;
+  padding: 10vw 18vw;
+  border: none;
+  border-radius: 25px;
+  background: red;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#chaosBtn:active {
+  transform: scale(0.9);
+}
+
+#eventText {
+  margin-top: 20px;
+  font-size: 5vw;
+  min-height: 40px;
+}
+
+#randomImage {
+  margin-top: 15px;
+  width: 60%;
+  max-width: 300px;
+  border-radius: 15px;
+  display: none;
+}
+
+.shop {
+  margin-top: 30px;
+  font-size: 4vw;
+}
+
+.shop button {
+  margin: 8px;
+  padding: 10px 15px;
+  font-size: 4vw;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+#luckyBox {
+  margin-top: 15px;
+  font-size: 10vw;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="points">Punkty: 0</div>
+
+<button id="chaosBtn">?</button>
+
+<div id="eventText"></div>
+<img id="randomImage">
+<div id="luckyBox">📦</div>
+
+<div class="shop">
+  <h3>🛒 Sklep</h3>
+  <button onclick="buySkin('gold',500)">Złoty (500)</button>
+  <button onclick="buySkin('rgb',1000)">RGB (1000)</button>
+  <button onclick="buyBg('black',300)">Tło Ciemne (300)</button>
+  <button onclick="buyBg('space',800)">Tło Kosmos (800)</button>
+  <button onclick="buyLucky()">Lucky Block (250)</button>
+</div>
+
+<script>
+let points = parseInt(localStorage.getItem("points")) || 0;
+let skin = localStorage.getItem("skin") || "red";
+let bg = localStorage.getItem("bg") || "blue";
+
+const btn = document.getElementById("chaosBtn");
+const pointsText = document.getElementById("points");
+const eventText = document.getElementById("eventText");
+const randomImage = document.getElementById("randomImage");
+const luckyBox = document.getElementById("luckyBox");
+
+const clickSound = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
+
+const images = [
+  "https://picsum.photos/300?1",
+  "https://picsum.photos/300?2",
+  "https://picsum.photos/300?3"
+];
+
+applySkin();
+applyBg();
+updateUI();
+
+btn.addEventListener("click", () => {
+  clickSound.play();
+  let roll = Math.random() * 100;
+  randomImage.style.display = "none";
+
+  if (roll < 60) {
+    points += 1;
+    eventText.innerText = "+1";
+  }
+  else if (roll < 90) {
+    points += 5;
+    showImage();
+    eventText.innerText = "Drop +5";
+  }
+  else if (roll < 99) {
+    points += 20;
+    shake();
+    eventText.innerText = "EPIC +20";
+  }
+  else {
+    points += 100;
+    document.body.style.background = "gold";
+    eventText.innerText = "💎 LEGENDARNY +100";
+  }
+
+  save();
+  updateUI();
+});
+
+function updateUI(){
+  pointsText.innerText = "Punkty: " + points;
+}
+
+function save(){
+  localStorage.setItem("points", points);
+  localStorage.setItem("skin", skin);
+  localStorage.setItem("bg", bg);
+}
+
+function showImage(){
+  let i = Math.floor(Math.random()*images.length);
+  randomImage.src = images[i];
+  randomImage.style.display = "block";
+}
+
+function shake(){
+  document.body.style.transform = "translate(5px,5px)";
+  setTimeout(()=>document.body.style.transform="translate(0,0)",150);
+}
+
+/* SKINY */
+function buySkin(type,cost){
+  if(points>=cost){
+    points-=cost;
+    skin=type;
+    applySkin();
+    eventText.innerText="Kupiono skin!";
+    save();
+    updateUI();
+  } else eventText.innerText="Za mało punktów!";
+}
+
+function applySkin(){
+  if(skin==="gold") btn.style.background="gold";
+  else if(skin==="rgb"){
+    let hue=0;
+    setInterval(()=>{
+      btn.style.background="hsl("+hue+",100%,50%)";
+      hue=(hue+5)%360;
+    },100);
+  }
+  else btn.style.background="red";
+}
+
+/* TŁA */
+function buyBg(type,cost){
+  if(points>=cost){
+    points-=cost;
+    bg=type;
+    applyBg();
+    eventText.innerText="Kupiono tło!";
+    save();
+    updateUI();
+  } else eventText.innerText="Za mało punktów!";
+}
+
+function applyBg(){
+  if(bg==="black") document.body.style.background="#111";
+  else if(bg==="space") document.body.style.background="linear-gradient(#000011,#000033)";
+  else document.body.style.background="#0b1a3a";
+}
+
+/* LUCKY BLOCK */
+function buyLucky(){
+  if(points<250){ eventText.innerText="Za mało punktów!"; return; }
+
+  points-=250;
+  updateUI();
+  luckyBox.style.display="block";
+  eventText.innerText="Otwieranie...";
+
+  let spin=0;
+  let interval=setInterval(()=>{
+    luckyBox.style.transform="rotate("+spin+"deg)";
+    spin+=20;
+  },50);
+
+  setTimeout(()=>{
+    clearInterval(interval);
+    luckyBox.style.display="none";
+    let roll=Math.random();
+
+    if(roll<0.5){
+      points+=50;
+      eventText.innerText="Lucky +50!";
+    } else if(roll<0.8){
+      points+=200;
+      eventText.innerText="MEGA +200!";
+    } else {
+      points-=30;
+      eventText.innerText="Troll -30 💀";
+    }
+
+    save();
+    updateUI();
+  },2000);
+}
+</script>
+
+</body>
+</html>
