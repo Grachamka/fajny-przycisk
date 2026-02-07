@@ -2,246 +2,220 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Przycisk Chaosu 2.0</title>
+<title>Fajny Przycisk BOX 3.0</title>
 
 <style>
-body {
-  margin: 0;
-  background-color: #0b1a3a;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  color: white;
-  user-select: none;
+body{
+  margin:0;
+  font-family:Arial;
+  background:radial-gradient(circle at center,#0a0f2c,#000814);
+  color:white;
+  text-align:center;
+  overflow:hidden;
 }
 
-#points {
-  font-size: 5vw;
-  margin-top: 15px;
+#points{
+  position:fixed;
+  top:10px;
+  left:10px;
+  font-size:20px;
 }
 
-#chaosBtn {
-  margin-top: 8vh;
-  font-size: 15vw;
-  padding: 10vw 18vw;
-  border: none;
-  border-radius: 25px;
-  background: red;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
+#dropRates{
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  font-size:14px;
+  opacity:0.8;
 }
 
-#chaosBtn:active {
-  transform: scale(0.9);
+button{
+  padding:20px 40px;
+  font-size:25px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  margin:10px;
 }
 
-#eventText {
-  margin-top: 20px;
-  font-size: 5vw;
-  min-height: 40px;
+#mainButton{
+  background:red;
+  color:white;
 }
 
-#randomImage {
-  margin-top: 15px;
-  width: 60%;
-  max-width: 300px;
-  border-radius: 15px;
-  display: none;
+#boxButton{
+  background:purple;
+  color:white;
 }
 
-.shop {
-  margin-top: 30px;
-  font-size: 4vw;
+#legendaryBanner{
+  position:fixed;
+  top:40%;
+  width:100%;
+  font-size:60px;
+  color:gold;
+  display:none;
+  text-shadow:0 0 20px gold;
 }
 
-.shop button {
-  margin: 8px;
-  padding: 10px 15px;
-  font-size: 4vw;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
+.goldBG{
+  animation:goldShine 3s infinite linear;
+  background:linear-gradient(45deg,gold,orange,yellow);
+  background-size:400% 400%;
 }
 
-#luckyBox {
-  margin-top: 15px;
-  font-size: 10vw;
-  display: none;
+@keyframes goldShine{
+  0%{background-position:0%}
+  50%{background-position:100%}
+  100%{background-position:0%}
 }
+
+#lootAnimation{
+  position:fixed;
+  top:30%;
+  left:0;
+  width:100%;
+  display:none;
+  overflow:hidden;
+}
+
+.lootRow{
+  display:flex;
+  transition:3s cubic-bezier(.2,.8,.2,1);
+}
+
+.lootItem{
+  min-width:200px;
+  margin:10px;
+  padding:20px;
+  border-radius:15px;
+  font-size:20px;
+}
+
+.common{background:gray;}
+.rare{background:blue;}
+.epic{background:purple;}
+.legendary{background:gold;color:black;}
+
 </style>
 </head>
 
 <body>
 
-<div id="points">Punkty: 0</div>
+<div id="points"></div>
+<div id="dropRates">
+Common 60%<br>
+Rare 25%<br>
+Epic 10%<br>
+Legendary 5%
+</div>
 
-<button id="chaosBtn">?</button>
+<h1>FAJNY PRZYCISK 3.0</h1>
 
-<div id="eventText"></div>
-<img id="randomImage">
-<div id="luckyBox">📦</div>
+<button id="mainButton" onclick="clickMain()">?</button>
+<button id="boxButton" onclick="openBox()">🎁 Otwórz Skrzynkę (50 pkt)</button>
 
-<div class="shop">
-  <h3>🛒 Sklep</h3>
-  <button onclick="buySkin('gold',500)">Złoty (500)</button>
-  <button onclick="buySkin('rgb',1000)">RGB (1000)</button>
-  <button onclick="buyBg('black',300)">Tło Ciemne (300)</button>
-  <button onclick="buyBg('space',800)">Tło Kosmos (800)</button>
-  <button onclick="buyLucky()">Lucky Block (250)</button>
+<div id="legendaryBanner">LEGENDARNY DROP!</div>
+
+<div id="lootAnimation">
+  <div class="lootRow" id="lootRow"></div>
 </div>
 
 <script>
-let points = parseInt(localStorage.getItem("points")) || 0;
-let skin = localStorage.getItem("skin") || "red";
-let bg = localStorage.getItem("bg") || "blue";
+let points = parseInt(localStorage.getItem("points") || 0);
+let ownedSkins = JSON.parse(localStorage.getItem("skins") || '["red"]');
+let activeSkin = localStorage.getItem("activeSkin") || "red";
 
-const btn = document.getElementById("chaosBtn");
-const pointsText = document.getElementById("points");
-const eventText = document.getElementById("eventText");
-const randomImage = document.getElementById("randomImage");
-const luckyBox = document.getElementById("luckyBox");
-
-const clickSound = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
-
-const images = [
-  "https://picsum.photos/300?1",
-  "https://picsum.photos/300?2",
-  "https://picsum.photos/300?3"
-];
-
-applySkin();
-applyBg();
 updateUI();
-
-btn.addEventListener("click", () => {
-  clickSound.play();
-  let roll = Math.random() * 100;
-  randomImage.style.display = "none";
-
-  if (roll < 60) {
-    points += 1;
-    eventText.innerText = "+1";
-  }
-  else if (roll < 90) {
-    points += 5;
-    showImage();
-    eventText.innerText = "Drop +5";
-  }
-  else if (roll < 99) {
-    points += 20;
-    shake();
-    eventText.innerText = "EPIC +20";
-  }
-  else {
-    points += 100;
-    document.body.style.background = "gold";
-    eventText.innerText = "💎 LEGENDARNY +100";
-  }
-
-  save();
-  updateUI();
-});
+applySkin();
 
 function updateUI(){
-  pointsText.innerText = "Punkty: " + points;
+  document.getElementById("points").innerText="Punkty: "+points;
+  localStorage.setItem("points",points);
 }
 
-function save(){
-  localStorage.setItem("points", points);
-  localStorage.setItem("skin", skin);
-  localStorage.setItem("bg", bg);
-}
-
-function showImage(){
-  let i = Math.floor(Math.random()*images.length);
-  randomImage.src = images[i];
-  randomImage.style.display = "block";
-}
-
-function shake(){
-  document.body.style.transform = "translate(5px,5px)";
-  setTimeout(()=>document.body.style.transform="translate(0,0)",150);
-}
-
-/* SKINY */
-function buySkin(type,cost){
-  if(points>=cost){
-    points-=cost;
-    skin=type;
-    applySkin();
-    eventText.innerText="Kupiono skin!";
-    save();
-    updateUI();
-  } else eventText.innerText="Za mało punktów!";
-}
-
-function applySkin(){
-  if(skin==="gold") btn.style.background="gold";
-  else if(skin==="rgb"){
-    let hue=0;
-    setInterval(()=>{
-      btn.style.background="hsl("+hue+",100%,50%)";
-      hue=(hue+5)%360;
-    },100);
-  }
-  else btn.style.background="red";
-}
-
-/* TŁA */
-function buyBg(type,cost){
-  if(points>=cost){
-    points-=cost;
-    bg=type;
-    applyBg();
-    eventText.innerText="Kupiono tło!";
-    save();
-    updateUI();
-  } else eventText.innerText="Za mało punktów!";
-}
-
-function applyBg(){
-  if(bg==="black") document.body.style.background="#111";
-  else if(bg==="space") document.body.style.background="linear-gradient(#000011,#000033)";
-  else document.body.style.background="#0b1a3a";
-}
-
-/* LUCKY BLOCK */
-function buyLucky(){
-  if(points<250){ eventText.innerText="Za mało punktów!"; return; }
-
-  points-=250;
+function clickMain(){
+  points+=1;
   updateUI();
-  luckyBox.style.display="block";
-  eventText.innerText="Otwieranie...";
+  new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3").play();
+}
 
-  let spin=0;
-  let interval=setInterval(()=>{
-    luckyBox.style.transform="rotate("+spin+"deg)";
-    spin+=20;
+function openBox(){
+  if(points<50){
+    alert("Za mało punktów!");
+    return;
+  }
+
+  points-=50;
+  updateUI();
+
+  const lootRow=document.getElementById("lootRow");
+  const lootAnim=document.getElementById("lootAnimation");
+  lootRow.innerHTML="";
+  lootAnim.style.display="block";
+
+  let items=[];
+  for(let i=0;i<20;i++){
+    let rarityRoll=Math.random()*100;
+    let rarity="common";
+    if(rarityRoll<60) rarity="common";
+    else if(rarityRoll<85) rarity="rare";
+    else if(rarityRoll<95) rarity="epic";
+    else rarity="legendary";
+
+    items.push(rarity);
+  }
+
+  items.forEach(r=>{
+    let div=document.createElement("div");
+    div.className="lootItem "+r;
+    div.innerText=r.toUpperCase();
+    lootRow.appendChild(div);
+  });
+
+  setTimeout(()=>{
+    lootRow.style.transform="translateX(-1500px)";
   },50);
 
   setTimeout(()=>{
-    clearInterval(interval);
-    luckyBox.style.display="none";
-    let roll=Math.random();
-
-    if(roll<0.5){
-      points+=50;
-      eventText.innerText="Lucky +50!";
-    } else if(roll<0.8){
-      points+=200;
-      eventText.innerText="MEGA +200!";
-    } else {
-      points-=30;
-      eventText.innerText="Troll -30 💀";
-    }
-
-    save();
-    updateUI();
-  },2000);
+    let finalRarity=items[10];
+    reward(finalRarity);
+    lootAnim.style.display="none";
+    lootRow.style.transform="translateX(0px)";
+  },3000);
 }
-</script>
 
+function reward(rarity){
+
+  if(rarity==="legendary"){
+    document.body.classList.add("goldBG");
+    document.getElementById("legendaryBanner").style.display="block";
+    new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3").play();
+    setTimeout(()=>{
+      document.getElementById("legendaryBanner").style.display="none";
+    },2000);
+  }
+
+  if(!ownedSkins.includes(rarity)){
+    ownedSkins.push(rarity);
+    localStorage.setItem("skins",JSON.stringify(ownedSkins));
+  }
+
+  activeSkin=rarity;
+  localStorage.setItem("activeSkin",activeSkin);
+  applySkin();
+}
+
+function applySkin(){
+  const btn=document.getElementById("mainButton");
+
+  if(activeSkin==="common") btn.style.background="gray";
+  if(activeSkin==="rare") btn.style.background="blue";
+  if(activeSkin==="epic") btn.style.background="purple";
+  if(activeSkin==="legendary") btn.style.background="gold";
+  if(activeSkin==="red") btn.style.background="red";
+}
+
+</script>
 </body>
 </html>
