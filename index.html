@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Fajny Przycisk BOX 3.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fajny Przycisk 4.0</title>
 
 <style>
 body{
@@ -11,51 +12,60 @@ body{
   background:radial-gradient(circle at center,#0a0f2c,#000814);
   color:white;
   text-align:center;
-  overflow:hidden;
+}
+
+h1{
+  margin-top:20px;
 }
 
 #points{
   position:fixed;
   top:10px;
   left:10px;
-  font-size:20px;
-}
-
-#dropRates{
-  position:fixed;
-  bottom:10px;
-  right:10px;
-  font-size:14px;
-  opacity:0.8;
+  font-size:18px;
 }
 
 button{
-  padding:20px 40px;
-  font-size:25px;
+  padding:25px 40px;
+  font-size:22px;
   border:none;
   border-radius:20px;
   cursor:pointer;
-  margin:10px;
+  margin:15px;
 }
 
 #mainButton{
   background:red;
   color:white;
+  width:70%;
+  max-width:300px;
 }
 
-#boxButton{
-  background:purple;
-  color:white;
-}
-
-#legendaryBanner{
+#shopButton{
   position:fixed;
-  top:40%;
+  top:10px;
+  right:10px;
+  background:#444;
+  color:white;
+  padding:10px 15px;
+}
+
+#shop{
+  position:fixed;
+  top:0;
+  left:0;
   width:100%;
-  font-size:60px;
-  color:gold;
+  height:100%;
+  background:rgba(0,0,0,0.95);
   display:none;
-  text-shadow:0 0 20px gold;
+  overflow:auto;
+}
+
+.shopItem{
+  background:#111;
+  padding:20px;
+  margin:20px;
+  border-radius:15px;
 }
 
 .goldBG{
@@ -69,63 +79,40 @@ button{
   50%{background-position:100%}
   100%{background-position:0%}
 }
-
-#lootAnimation{
-  position:fixed;
-  top:30%;
-  left:0;
-  width:100%;
-  display:none;
-  overflow:hidden;
-}
-
-.lootRow{
-  display:flex;
-  transition:3s cubic-bezier(.2,.8,.2,1);
-}
-
-.lootItem{
-  min-width:200px;
-  margin:10px;
-  padding:20px;
-  border-radius:15px;
-  font-size:20px;
-}
-
-.common{background:gray;}
-.rare{background:blue;}
-.epic{background:purple;}
-.legendary{background:gold;color:black;}
-
 </style>
 </head>
 
 <body>
 
 <div id="points"></div>
-<div id="dropRates">
-Common 60%<br>
-Rare 25%<br>
-Epic 10%<br>
-Legendary 5%
-</div>
 
-<h1>FAJNY PRZYCISK 3.0</h1>
+<button id="shopButton" onclick="openShop()">🛒</button>
+
+<h1>FAJNY PRZYCISK</h1>
 
 <button id="mainButton" onclick="clickMain()">?</button>
-<button id="boxButton" onclick="openBox()">🎁 Otwórz Skrzynkę (50 pkt)</button>
 
-<div id="legendaryBanner">LEGENDARNY DROP!</div>
+<div id="shop">
+  <h2>SKLEP</h2>
 
-<div id="lootAnimation">
-  <div class="lootRow" id="lootRow"></div>
+  <div class="shopItem">
+    <h3>🎁 Skrzynka</h3>
+    <p>Koszt: 50 punktów</p>
+    <button onclick="openBox()">Otwórz</button>
+  </div>
+
+  <div class="shopItem">
+    <h3>💎 Złoty Skin</h3>
+    <p>Koszt: 100 punktów</p>
+    <button onclick="buyGold()">Kup</button>
+  </div>
+
+  <button onclick="closeShop()">❌ Zamknij</button>
 </div>
 
 <script>
 let points = parseInt(localStorage.getItem("points") || 0);
-let ownedSkins = JSON.parse(localStorage.getItem("skins") || '["red"]');
-let activeSkin = localStorage.getItem("activeSkin") || "red";
-
+let activeSkin = localStorage.getItem("skin") || "red";
 updateUI();
 applySkin();
 
@@ -137,7 +124,14 @@ function updateUI(){
 function clickMain(){
   points+=1;
   updateUI();
-  new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3").play();
+}
+
+function openShop(){
+  document.getElementById("shop").style.display="block";
+}
+
+function closeShop(){
+  document.getElementById("shop").style.display="none";
 }
 
 function openBox(){
@@ -149,60 +143,38 @@ function openBox(){
   points-=50;
   updateUI();
 
-  const lootRow=document.getElementById("lootRow");
-  const lootAnim=document.getElementById("lootAnimation");
-  lootRow.innerHTML="";
-  lootAnim.style.display="block";
+  let roll=Math.random()*100;
+  let rarity="common";
 
-  let items=[];
-  for(let i=0;i<20;i++){
-    let rarityRoll=Math.random()*100;
-    let rarity="common";
-    if(rarityRoll<60) rarity="common";
-    else if(rarityRoll<85) rarity="rare";
-    else if(rarityRoll<95) rarity="epic";
-    else rarity="legendary";
-
-    items.push(rarity);
-  }
-
-  items.forEach(r=>{
-    let div=document.createElement("div");
-    div.className="lootItem "+r;
-    div.innerText=r.toUpperCase();
-    lootRow.appendChild(div);
-  });
-
-  setTimeout(()=>{
-    lootRow.style.transform="translateX(-1500px)";
-  },50);
-
-  setTimeout(()=>{
-    let finalRarity=items[10];
-    reward(finalRarity);
-    lootAnim.style.display="none";
-    lootRow.style.transform="translateX(0px)";
-  },3000);
-}
-
-function reward(rarity){
+  if(roll<60) rarity="common";
+  else if(roll<85) rarity="rare";
+  else if(roll<95) rarity="epic";
+  else rarity="legendary";
 
   if(rarity==="legendary"){
     document.body.classList.add("goldBG");
-    document.getElementById("legendaryBanner").style.display="block";
-    new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3").play();
     setTimeout(()=>{
-      document.getElementById("legendaryBanner").style.display="none";
+      document.body.classList.remove("goldBG");
     },2000);
   }
 
-  if(!ownedSkins.includes(rarity)){
-    ownedSkins.push(rarity);
-    localStorage.setItem("skins",JSON.stringify(ownedSkins));
+  activeSkin=rarity;
+  localStorage.setItem("skin",activeSkin);
+  applySkin();
+
+  alert("Wylosowano: "+rarity.toUpperCase());
+}
+
+function buyGold(){
+  if(points<100){
+    alert("Za mało punktów!");
+    return;
   }
 
-  activeSkin=rarity;
-  localStorage.setItem("activeSkin",activeSkin);
+  points-=100;
+  activeSkin="legendary";
+  localStorage.setItem("skin",activeSkin);
+  updateUI();
   applySkin();
 }
 
@@ -215,7 +187,7 @@ function applySkin(){
   if(activeSkin==="legendary") btn.style.background="gold";
   if(activeSkin==="red") btn.style.background="red";
 }
-
 </script>
+
 </body>
 </html>
