@@ -1,193 +1,478 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fajny Przycisk 4.0</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fajny Przycisk — wersja PRO</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:radial-gradient(circle at center,#0a0f2c,#000814);
-  color:white;
-  text-align:center;
-}
+  :root{
+    --bg1:#0a0f2c;
+    --bg2:#000814;
+    --card:#0f1724;
+    --accent:#ff3b3b;
+    --shopBtn:#4b4b4b;
+  }
 
-h1{
-  margin-top:20px;
-}
+  html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(circle at center,var(--bg1),var(--bg2));color:#fff;overflow:hidden}
+  .app{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100%;
+    gap:10px;
+    padding:12px;
+    box-sizing:border-box;
+  }
 
-#points{
-  position:fixed;
-  top:10px;
-  left:10px;
-  font-size:18px;
-}
+  header{width:100%;display:flex;align-items:center;justify-content:center;position:relative}
+  h1{margin:0;font-size:clamp(18px,5vw,36px);letter-spacing:2px}
+  #points{position:absolute;left:12px;top:6px;font-size:14px;opacity:.95}
+  #shopIcon{position:absolute;right:10px;top:4px;background:var(--shopBtn);border-radius:14px;padding:8px;cursor:pointer}
 
-button{
-  padding:25px 40px;
-  font-size:22px;
-  border:none;
-  border-radius:20px;
-  cursor:pointer;
-  margin:15px;
-}
+  /* Duży, responsywny przycisk */
+  #mainButton{
+    width: min(88%, 720px);
+    max-width:720px;
+    aspect-ratio: 6 / 1.3; /* ładny wielki przycisk */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(28px, 8vw, 56px);
+    border-radius:28px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    box-shadow: 0 12px 30px rgba(0,0,0,.5);
+    cursor:pointer;
+    user-select:none;
+    transition: transform .12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #mainButton:active{ transform: scale(.97); }
 
-#mainButton{
-  background:red;
-  color:white;
-  width:70%;
-  max-width:300px;
-}
+  /* event text pequeño */
+  #eventText{font-size:clamp(12px,3.4vw,18px);min-height:26px;margin-top:6px;opacity:.95}
 
-#shopButton{
-  position:fixed;
-  top:10px;
-  right:10px;
-  background:#444;
-  color:white;
-  padding:10px 15px;
-}
+  /* fullscreen image */
+  #fullscreenImage{
+    position:fixed;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:30;
+  }
 
-#shop{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.95);
-  display:none;
-  overflow:auto;
-}
+  /* shop overlay */
+  .shopOverlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter: blur(6px);z-index:40;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 12px;
+  }
+  .shopCard{
+    width:min(980px,96%);max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:14px 16px;margin:8px auto;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.6)
+  }
+  .shopHeader{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .shopGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+  .item{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:8px}
+  .item h3{margin:0;font-size:16px}
+  .item p{margin:0;font-size:13px;opacity:.9}
+  .item button{margin-top:auto;padding:8px 10px;border-radius:10px;border:none;background:#1f6feb;color:white;cursor:pointer}
 
-.shopItem{
-  background:#111;
-  padding:20px;
-  margin:20px;
-  border-radius:15px;
-}
+  /* loot animation area inside shop */
+  #lootArea{margin-top:14px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);min-height:120px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .lootRow{display:flex;gap:8px;transform:translateX(0);transition:transform 2.4s cubic-bezier(.2,.9,.2,1)}
+  .lootCard{min-width:160px;height:88px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
 
-.goldBG{
-  animation:goldShine 3s infinite linear;
-  background:linear-gradient(45deg,gold,orange,yellow);
-  background-size:400% 400%;
-}
+  /* rarity colors */
+  .common{background:#6b7280}   /* gray */
+  .rare{background:#2563eb}     /* blue */
+  .epic{background:#7c3aed}     /* purple */
+  .legendary{background:linear-gradient(45deg,#f6d365,#fda085);color:black}
 
-@keyframes goldShine{
-  0%{background-position:0%}
-  50%{background-position:100%}
-  100%{background-position:0%}
-}
+  /* legendary banner */
+  #legendaryBanner{position:fixed;left:0;right:0;top:30%;display:none;z-index:50;font-size:clamp(28px,10vw,72px);text-align:center;color:gold;text-shadow:0 0 30px rgba(255,200,0,.9)}
+
+  /* gold background effect (shimmer) */
+  .goldBG{
+    animation:goldMove 4s linear infinite;
+    background:linear-gradient(90deg,#ffef9a,#ffd24a,#fff1b8,#ffb84d);
+    background-size:400% 400%;
+    color:black;
+  }
+  @keyframes goldMove{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  /* small helper */
+  .small{font-size:12px;opacity:.9}
+  @media(min-width:900px){
+    #mainButton{aspect-ratio:6/1.6}
+  }
 </style>
 </head>
-
 <body>
+  <div class="app">
+    <header>
+      <div id="points">Punkty: 0</div>
+      <div id="shopIcon" title="Sklep" onclick="openShop()">🛒</div>
+      <h1>FAJNY PRZYCISK</h1>
+    </header>
 
-<div id="points"></div>
+    <button id="mainButton" aria-label="Przycisk główny">?</button>
 
-<button id="shopButton" onclick="openShop()">🛒</button>
-
-<h1>FAJNY PRZYCISK</h1>
-
-<button id="mainButton" onclick="clickMain()">?</button>
-
-<div id="shop">
-  <h2>SKLEP</h2>
-
-  <div class="shopItem">
-    <h3>🎁 Skrzynka</h3>
-    <p>Koszt: 50 punktów</p>
-    <button onclick="openBox()">Otwórz</button>
+    <div id="eventText" class="small"></div>
   </div>
 
-  <div class="shopItem">
-    <h3>💎 Złoty Skin</h3>
-    <p>Koszt: 100 punktów</p>
-    <button onclick="buyGold()">Kup</button>
-  </div>
+  <img id="fullscreenImage" alt="event image">
 
-  <button onclick="closeShop()">❌ Zamknij</button>
-</div>
+  <div id="legendaryBanner">LEGENDARNY!</div>
+
+  <!-- SHOP OVERLAY -->
+  <div class="shopOverlay" id="shopOverlay" aria-hidden="true">
+    <div class="shopCard" role="dialog" aria-modal="true" aria-label="Sklep">
+      <div class="shopHeader">
+        <h2>SKLEP</h2>
+        <div>
+          <button onclick="closeShop()">❌ Zamknij</button>
+        </div>
+      </div>
+
+      <p class="small">Masz <span id="shopPoints">0</span> punktów</p>
+
+      <div class="shopGrid">
+        <!-- Skrzynka -->
+        <div class="item">
+          <h3>🎁 Lucky Skrzynka</h3>
+          <p>Koszt: <strong>50 pkt</strong></p>
+          <p class="small">Możesz dostać: common / rare / epic / legendary</p>
+          <button onclick="buyAndOpenBox()">Kup i Otwórz (50)</button>
+        </div>
+
+        <!-- Skins -->
+        <div class="item">
+          <h3>✨ Złoty Skin</h3>
+          <p>Koszt: <strong>150 pkt</strong></p>
+          <p class="small">Zmień wygląd przycisku na złoty (bez limitu)</p>
+          <button onclick="buySkin('legendary',150)">Kup Złoty</button>
+        </div>
+
+        <div class="item">
+          <h3>🌈 RGB Skin</h3>
+          <p>Koszt: <strong>400 pkt</strong></p>
+          <p class="small">Przycisk zacznie mienić się kolorami</p>
+          <button onclick="buySkin('rgb',400)">Kup RGB</button>
+        </div>
+
+        <!-- backgrounds -->
+        <div class="item">
+          <h3>🌌 Tło Kosmos</h3>
+          <p>Koszt: <strong>250 pkt</strong></p>
+          <p class="small">Animowane gwiazdy w tle</p>
+          <button onclick="buyBackground('space',250)">Kup Tło</button>
+        </div>
+
+        <div class="item">
+          <h3>🎵 Muzyka ścieżka</h3>
+          <p>Koszt: <strong>200 pkt</strong></p>
+          <p class="small">Muzyka odtwarzana przy legendarnym</p>
+          <button onclick="buyMusic(200)">Kup Music</button>
+        </div>
+
+        <!-- inventory / equip -->
+        <div class="item">
+          <h3>🎒 Ekwipunek</h3>
+          <p class="small">Twoje skiny (klik, żeby wyposażyć):</p>
+          <div id="inventoryList" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- loot animation area -->
+      <div id="lootArea" style="display:none">
+        <div id="lootRow" class="lootRow"></div>
+      </div>
+
+      <p class="small" style="margin-top:12px">Procenty dropów: <strong>Common 60% / Rare 25% / Epic 10% / Legendary 5%</strong></p>
+    </div>
+  </div>
 
 <script>
-let points = parseInt(localStorage.getItem("points") || 0);
-let activeSkin = localStorage.getItem("skin") || "red";
-updateUI();
-applySkin();
+/* ========== SETTINGS & STATE ========== */
+const PICS = [
+  // różne źródła żeby mniej się powtarzało
+  "https://picsum.photos/1200/2000?random=11",
+  "https://picsum.photos/1200/2000?random=22",
+  "https://picsum.photos/1200/2000?random=33",
+  "https://picsum.photos/1200/2000?random=44",
+  "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=1300&q=80",
+  "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=1300&q=80",
+  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1300&q=80",
+  "https://picsum.photos/1200/2000?random=55",
+  "https://picsum.photos/1200/2000?random=66",
+  "https://picsum.photos/1200/2000?random=77",
+  "https://picsum.photos/1200/2000?random=88",
+  "https://picsum.photos/1200/2000?random=99"
+];
+
+const SOUNDS = {
+  click: "https://www.soundjay.com/buttons/sounds/button-16.mp3",
+  rare: "https://www.soundjay.com/buttons/sounds/button-3.mp3",
+  epic: "https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3",
+  legendary: "https://www.soundjay.com/human/sounds/applause-8.mp3"
+};
+
+const RATES = [
+  { id: "common", pct: 60, points: 1, sound: null },
+  { id: "rare", pct: 25, points: 5, sound: SOUNDS.rare },
+  { id: "epic", pct: 10, points: 20, sound: SOUNDS.epic },
+  { id: "legendary", pct: 5, points: 100, sound: SOUNDS.legendary }
+];
+
+let state = {
+  points: parseInt(localStorage.getItem("points")||"0"),
+  ownedSkins: JSON.parse(localStorage.getItem("ownedSkins")||'["red"]'),
+  activeSkin: localStorage.getItem("activeSkin") || "red",
+  ownedBackgrounds: JSON.parse(localStorage.getItem("ownedBackgrounds")||'[]'),
+  activeBackground: localStorage.getItem("activeBackground") || "default",
+  canClick: true,
+  legendaryActive: false,
+  musicBought: localStorage.getItem("musicBought")==="true"
+};
+
+/* ========== HELPERS ========== */
+function saveState(){
+  localStorage.setItem("points", String(state.points));
+  localStorage.setItem("ownedSkins", JSON.stringify(state.ownedSkins));
+  localStorage.setItem("activeSkin", state.activeSkin);
+  localStorage.setItem("ownedBackgrounds", JSON.stringify(state.ownedBackgrounds));
+  localStorage.setItem("activeBackground", state.activeBackground);
+  localStorage.setItem("musicBought", state.musicBought ? "true" : "false");
+}
 
 function updateUI(){
-  document.getElementById("points").innerText="Punkty: "+points;
-  localStorage.setItem("points",points);
+  document.getElementById("points").innerText = "Punkty: " + state.points;
+  document.getElementById("shopPoints").innerText = state.points;
+  // inventory
+  const inv = document.getElementById("inventoryList");
+  inv.innerHTML = "";
+  state.ownedSkins.forEach(s=>{
+    const b = document.createElement("button");
+    b.textContent = s.toUpperCase();
+    b.style.padding = "6px 8px";
+    b.style.borderRadius = "8px";
+    b.style.border = state.activeSkin===s ? "2px solid #fff" : "none";
+    b.style.background = skinColor(s);
+    b.style.color = s==="legendary" ? "black" : "white";
+    b.onclick = ()=>{ state.activeSkin = s; saveState(); applySkin(); updateUI(); closeShop(); };
+    inv.appendChild(b);
+  });
 }
 
-function clickMain(){
-  points+=1;
-  updateUI();
+function skinColor(s){
+  if(s==="red") return "red";
+  if(s==="common") return "#6b7280";
+  if(s==="rare") return "#2563eb";
+  if(s==="epic") return "#7c3aed";
+  if(s==="legendary") return "linear-gradient(45deg,#f6d365,#fda085)";
+  if(s==="rgb") return "linear-gradient(90deg,#ff3b3b,#ffd86b,#7effc7,#74b9ff)";
+  return "#333";
 }
 
-function openShop(){
-  document.getElementById("shop").style.display="block";
-}
-
-function closeShop(){
-  document.getElementById("shop").style.display="none";
-}
-
-function openBox(){
-  if(points<50){
-    alert("Za mało punktów!");
-    return;
-  }
-
-  points-=50;
-  updateUI();
-
-  let roll=Math.random()*100;
-  let rarity="common";
-
-  if(roll<60) rarity="common";
-  else if(roll<85) rarity="rare";
-  else if(roll<95) rarity="epic";
-  else rarity="legendary";
-
-  if(rarity==="legendary"){
-    document.body.classList.add("goldBG");
-    setTimeout(()=>{
-      document.body.classList.remove("goldBG");
-    },2000);
-  }
-
-  activeSkin=rarity;
-  localStorage.setItem("skin",activeSkin);
-  applySkin();
-
-  alert("Wylosowano: "+rarity.toUpperCase());
-}
-
-function buyGold(){
-  if(points<100){
-    alert("Za mało punktów!");
-    return;
-  }
-
-  points-=100;
-  activeSkin="legendary";
-  localStorage.setItem("skin",activeSkin);
-  updateUI();
-  applySkin();
-}
-
+/* ========== APPLY VISUALS ========== */
+const mainBtn = document.getElementById("mainButton");
 function applySkin(){
-  const btn=document.getElementById("mainButton");
+  // reset
+  mainBtn.style.background = "";
+  mainBtn.style.color = "white";
+  mainBtn.style.backgroundImage = "";
+  mainBtn.style.transition = "background 300ms";
 
-  if(activeSkin==="common") btn.style.background="gray";
-  if(activeSkin==="rare") btn.style.background="blue";
-  if(activeSkin==="epic") btn.style.background="purple";
-  if(activeSkin==="legendary") btn.style.background="gold";
-  if(activeSkin==="red") btn.style.background="red";
+  if(state.activeSkin==="red") { mainBtn.style.background = "var(--accent)"; mainBtn.style.color="#fff"; }
+  else if(state.activeSkin==="common") mainBtn.style.background = "#6b7280";
+  else if(state.activeSkin==="rare") mainBtn.style.background = "#2563eb";
+  else if(state.activeSkin==="epic") mainBtn.style.background = "#7c3aed";
+  else if(state.activeSkin==="legendary"){ mainBtn.style.background = "linear-gradient(45deg,#f6d365,#fda085)"; mainBtn.style.color="black"; }
+  else if(state.activeSkin==="rgb"){
+    // rgb animated using CSS via interval
+    let hue = 0;
+    if(mainBtn._rgbInterval) clearInterval(mainBtn._rgbInterval);
+    mainBtn._rgbInterval = setInterval(()=>{
+      mainBtn.style.background = `linear-gradient(90deg,hsl(${hue},90%,60%), hsl(${(hue+80)%360},90%,60%))`;
+      hue = (hue + 6) % 360;
+    },80);
+    return;
+  }
+  if(mainBtn._rgbInterval){ clearInterval(mainBtn._rgbInterval); mainBtn._rgbInterval = null; }
 }
-</script>
 
+/* background apply */
+function applyBackground(){
+  // default
+  document.body.style.background = "radial-gradient(circle at center,var(--bg1),var(--bg2))";
+  if(state.activeBackground==="space"){
+    // simple star field using CSS background image hosted
+    document.body.style.background = "url('https://i.imgur.com/9aKQZ8L.jpg') center/cover fixed no-repeat";
+  }
+}
+
+/* ========== RANDOM / RARITY ========== */
+function getRarity(){
+  const roll = Math.random()*100;
+  let acc = 0;
+  for(const r of RATES){
+    acc += r.pct;
+    if(roll <= acc) return r;
+  }
+  return RATES[0];
+}
+
+/* ========== MAIN BUTTON CLICK (cooldown 1s) ========== */
+const FS_IMG = document.getElementById("fullscreenImage");
+const EVENT_TXT = document.getElementById("eventText");
+const LEG_BANNER = document.getElementById("legendaryBanner");
+
+mainBtn.addEventListener("click", async ()=> {
+  // if legendary active -> clear it on first click and allow normal click after clearing
+  if(state.legendaryActive){
+    document.body.classList.remove("goldBG");
+    state.legendaryActive = false;
+    saveState();
+    updateUI();
+    EVENT_TXT.innerText = "Złote tło wyłączone.";
+    return;
+  }
+  if(!state.canClick) return;
+  state.canClick = false;
+
+  // play small click sound
+  new Audio(SOUNDS.click).play().catch(()=>{});
+  // pick rarity
+  const r = getRarity();
+  state.points += r.points;
+  saveState();
+  updateUI();
+
+  // show big image
+  FS_IMG.src = PICS[Math.floor(Math.random()*PICS.length)] + "&t=" + Date.now();
+  FS_IMG.style.display = "block";
+
+  // play rarity sound if exists
+  if(r.sound) new Audio(r.sound).play().catch(()=>{});
+
+  // epic/legendary visual
+  if(r.id === "epic") EVENT_TXT.innerText = "EPICKI! +"+r.points;
+  else if(r.id === "rare") EVENT_TXT.innerText = "Rzadki! +"+r.points;
+  else if(r.id === "legendary"){
+    EVENT_TXT.innerText = "💎 LEGENDARNY! +"+r.points;
+    // apply gold background that stays until next click (user asked)
+    document.body.classList.add("goldBG");
+    state.legendaryActive = true;
+    saveState();
+    // show banner
+    LEG_BANNER.style.display = "block";
+    setTimeout(()=>{ LEG_BANNER.style.display = "none"; }, 2200);
+    // if bought music, play special track
+    if(state.musicBought){ const a=new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"); a.volume=0.6; a.play().catch(()=>{}); }
+  } else {
+    EVENT_TXT.innerText = "+" + r.points;
+  }
+
+  // hide image after 1s
+  setTimeout(()=>{ FS_IMG.style.display="none"; }, 1000);
+
+  // re-enable clicking after cooldown (1s)
+  setTimeout(()=>{ state.canClick = true; }, 1000);
+});
+
+/* ========== SHOP LOGIC ========== */
+function openShop(){ document.getElementById("shopOverlay").style.display="flex"; updateUI(); applyBackground(); }
+function closeShop(){ document.getElementById("shopOverlay").style.display="none"; applyBackground(); }
+
+/* buy skin */
+function buySkin(name,cost){
+  if(state.points < cost){ alert("Za mało punktów!"); return; }
+  state.points -= cost;
+  if(!state.ownedSkins.includes(name)) state.ownedSkins.push(name);
+  state.activeSkin = name;
+  saveState(); applySkin(); updateUI(); alert("Kupiono i wyposażono: "+name.toUpperCase());
+}
+
+/* buy background */
+function buyBackground(name,cost){
+  if(state.points < cost){ alert("Za mało punktów!"); return; }
+  state.points -= cost;
+  if(!state.ownedBackgrounds.includes(name)) state.ownedBackgrounds.push(name);
+  state.activeBackground = name;
+  saveState(); applyBackground(); updateUI(); alert("Kupiono tło: "+name);
+}
+
+/* buy music */
+function buyMusic(cost){
+  if(state.points < cost){ alert("Za mało punktów!"); return; }
+  state.points -= cost; state.musicBought = true;
+  saveState(); updateUI(); alert("Kupiono muzykę. Od teraz przy legendarnym zagra track.");
+}
+
+/* ========== LUCKY BOX (inside shop) ========== */
+async function buyAndOpenBox(){
+  if(state.points < 50){ alert("Za mało punktów!"); return; }
+  state.points -= 50; saveState(); updateUI();
+
+  const lootArea = document.getElementById("lootArea");
+  const lootRow = document.getElementById("lootRow");
+  lootArea.style.display = "flex";
+  lootRow.innerHTML = "";
+
+  // build random sequence (with visible rare items in row)
+  const seq = [];
+  const len = 18;
+  for(let i=0;i<len;i++){
+    const rand = Math.random()*100;
+    let id = "common";
+    if(rand < 60) id="common";
+    else if(rand < 85) id="rare";
+    else if(rand < 95) id="epic";
+    else id="legendary";
+    seq.push(id);
+  }
+
+  // populate
+  seq.forEach(s=>{
+    const d = document.createElement("div");
+    d.className = "lootCard " + s;
+    d.textContent = s.toUpperCase();
+    lootRow.appendChild(d);
+  });
+
+  // start animation: move left so middle item ends centered
+  setTimeout(()=>{ lootRow.style.transform = "translateX(-" + ( (lootRow.children[0].offsetWidth + 8) * 7 ) + "px)"; }, 60);
+
+  // after animation finishes, reward the middle item (index 7)
+  setTimeout(()=>{
+    const won = seq[7];
+    // reward points based on RATES mapping
+    const rate = RATES.find(r=>r.id===won);
+    if(rate){
+      state.points += rate.points;
+      if(won === "legendary"){
+        // ensure gold behavior: set legendaryActive true; goldBG persists until next click
+        document.body.classList.add("goldBG");
+        state.legendaryActive = true;
+        LEG_BANNER.style.display = "block";
+        setTimeout(()=>{ LEG_BANNER.style.display = "none"; }, 2500);
+        if(state.musicBought){ const a = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"); a.volume=0.6; a.play().catch(()=>{}); }
+      }
+      // give skin if not owned
+      if(!state.ownedSkins.includes(won)) state.ownedSkins.push(won);
+      state.activeSkin = won;
+      saveState(); applySkin(); updateUI();
+      alert("Skrzynka dała: " + won.toUpperCase() + " (+"+rate.points+" pkt). Skin wyposażony.");
+    }
+    // clean
+    lootArea.style.display = "none";
+    lootRow.style.transform = "translateX(0)";
+  }, 2600);
+}
+
+/* ========== INIT ========== */
+applySkin();
+applyBackground();
+updateUI();
+</script>
 </body>
 </html>
